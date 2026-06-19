@@ -1,0 +1,256 @@
+
+<h2 class="sr-only">YouTube earnings calculator — estimate video revenue by country, views, and duration</h2>
+<style>
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+.citem{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--border-radius-md);font-size:14px;color:var(--color-text-primary);cursor:pointer;transition:background .12s}
+.citem:hover{background:var(--color-background-secondary)}
+.citem.sel{background:var(--color-background-info);color:var(--color-text-info)}
+#cl::-webkit-scrollbar{width:4px}
+#cl::-webkit-scrollbar-thumb{background:var(--color-border-secondary);border-radius:2px}
+#calcBtn:hover{background:#3370CE!important}
+#calcBtn:active{transform:scale(.98)}
+</style>
+
+<div style="padding:1.5rem 0 2rem;max-width:640px;margin:0 auto">
+
+  <div style="margin-bottom:1.5rem">
+    <p style="font-size:12px;font-weight:500;color:#4382DF;text-transform:uppercase;letter-spacing:.08em;margin:0 0 8px">
+      <i class="ti ti-brand-youtube" aria-hidden="true" style="font-size:14px;vertical-align:-1px;margin-right:4px"></i>Revenue estimator
+    </p>
+    <h3 style="font-size:22px;font-weight:500;color:var(--color-text-primary);margin:0 0 5px;letter-spacing:-.01em">YouTube earnings calculator</h3>
+    <p style="font-size:14px;color:var(--color-text-secondary);margin:0;line-height:1.5">Enter a country, expected views, and video duration to estimate your CPM, RPM, and total earnings.</p>
+  </div>
+
+  <div style="background:var(--color-background-primary);border:.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1.5rem;margin-bottom:1rem">
+
+    <div style="margin-bottom:1.25rem;position:relative" id="pickerWrap">
+      <label style="display:block;font-size:11px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px">Target country</label>
+      <button type="button" id="pickerBtn" onclick="tp()" aria-haspopup="listbox" aria-expanded="false"
+        style="width:100%;display:flex;align-items:center;gap:10px;height:38px;padding:0 12px;background:var(--color-background-primary);border:.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);cursor:pointer;font-size:14px;color:var(--color-text-primary);text-align:left;transition:border-color .15s">
+        <i class="ti ti-world" id="globeIco" aria-hidden="true" style="font-size:16px;color:var(--color-text-secondary);flex-shrink:0"></i>
+        <span id="pflag" style="font-size:17px;line-height:1;flex-shrink:0;display:none"></span>
+        <span id="pname" style="flex:1;color:var(--color-text-secondary)">Select a country…</span>
+        <span id="pbadge" style="display:none;font-size:11px;font-weight:500;padding:2px 8px;border-radius:100px"></span>
+        <i class="ti ti-chevron-down" id="chev" aria-hidden="true" style="font-size:14px;color:var(--color-text-secondary);transition:transform .2s"></i>
+      </button>
+      <div id="dd" role="listbox" style="display:none;position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--color-background-primary);border:.5px solid var(--color-border-primary);border-radius:var(--border-radius-lg);z-index:100;overflow:hidden">
+        <div style="padding:8px;border-bottom:.5px solid var(--color-border-tertiary)">
+          <input type="text" id="csearch" placeholder="Search countries…" oninput="fc(this.value)"
+            style="width:100%;height:34px;font-size:13px;padding:0 10px;border:.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-secondary)">
+        </div>
+        <div id="cl" style="max-height:220px;overflow-y:auto;padding:4px"></div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.25rem">
+      <div>
+        <label for="vi" style="display:block;font-size:11px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px">Expected views</label>
+        <input type="number" id="vi" placeholder="e.g. 100000" min="0" style="width:100%;font-size:14px">
+      </div>
+      <div>
+        <label style="display:block;font-size:11px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px">Video duration</label>
+        <div style="display:flex;align-items:center;gap:4px">
+          <input type="number" id="dh" placeholder="0" min="0" max="23" aria-label="Hours" style="width:100%;text-align:center;font-size:14px">
+          <span style="font-size:11px;color:var(--color-text-secondary)">h</span>
+          <input type="number" id="dm" placeholder="0" min="0" max="59" aria-label="Minutes" style="width:100%;text-align:center;font-size:14px">
+          <span style="font-size:11px;color:var(--color-text-secondary)">m</span>
+          <input type="number" id="ds" placeholder="0" min="0" max="59" aria-label="Seconds" style="width:100%;text-align:center;font-size:14px">
+          <span style="font-size:11px;color:var(--color-text-secondary)">s</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="err" style="display:none;font-size:13px;color:var(--color-text-danger);background:var(--color-background-danger);border:.5px solid var(--color-border-danger);border-radius:var(--border-radius-md);padding:8px 12px;margin-bottom:1rem"></div>
+
+    <button id="calcBtn" onclick="calc()" style="width:100%;height:42px;background:#4382DF;color:#fff;border:none;border-radius:var(--border-radius-md);font-size:14px;font-weight:500;cursor:pointer;transition:background .15s;letter-spacing:.01em">
+      <i class="ti ti-calculator" aria-hidden="true" style="font-size:15px;vertical-align:-2px;margin-right:6px"></i>Calculate earnings
+    </button>
+  </div>
+
+  <div id="res" style="display:none">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+      <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:1rem">
+        <p style="font-size:12px;color:var(--color-text-secondary);font-weight:500;margin:0 0 6px">
+          <i class="ti ti-ad-2" aria-hidden="true" style="font-size:13px;vertical-align:-1px;margin-right:4px"></i>Advertiser CPM
+        </p>
+        <p id="rcpm" style="font-size:28px;font-weight:500;color:#4382DF;margin:0 0 3px;letter-spacing:-.01em">—</p>
+        <p style="font-size:11px;color:var(--color-text-secondary);margin:0">per 1,000 ad impressions</p>
+      </div>
+      <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:1rem">
+        <p style="font-size:12px;color:var(--color-text-secondary);font-weight:500;margin:0 0 6px">
+          <i class="ti ti-coin" aria-hidden="true" style="font-size:13px;vertical-align:-1px;margin-right:4px"></i>Your RPM
+        </p>
+        <p id="rrpm" style="font-size:28px;font-weight:500;color:var(--color-text-success);margin:0 0 3px;letter-spacing:-.01em">—</p>
+        <p style="font-size:11px;color:var(--color-text-secondary);margin:0">per 1,000 views · after YouTube's 45% cut</p>
+      </div>
+    </div>
+
+    <div style="background:var(--color-background-primary);border:2px solid #4382DF;border-radius:var(--border-radius-lg);padding:1.5rem;margin-bottom:10px">
+      <p style="font-size:12px;color:var(--color-text-secondary);font-weight:500;margin:0 0 10px">
+        <i class="ti ti-currency-dollar" aria-hidden="true" style="font-size:13px;vertical-align:-1px;margin-right:4px"></i>Estimated earnings
+      </p>
+      <p id="rmain" style="font-size:40px;font-weight:500;color:var(--color-text-primary);margin:0 0 1.25rem;letter-spacing:-.025em">$0</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+        <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px;text-align:center">
+          <p style="font-size:10px;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.06em;margin:0 0 3px">Low</p>
+          <p id="rlow" style="font-size:15px;font-weight:500;color:var(--color-text-primary);margin:0">—</p>
+        </div>
+        <div style="background:var(--color-background-info);border-radius:var(--border-radius-md);padding:10px;text-align:center">
+          <p style="font-size:10px;color:var(--color-text-info);text-transform:uppercase;letter-spacing:.06em;margin:0 0 3px">Typical</p>
+          <p id="rmid" style="font-size:15px;font-weight:500;color:var(--color-text-info);margin:0">—</p>
+        </div>
+        <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px;text-align:center">
+          <p style="font-size:10px;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.06em;margin:0 0 3px">High</p>
+          <p id="rhigh" style="font-size:15px;font-weight:500;color:var(--color-text-primary);margin:0">—</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="dnote" style="display:none;background:var(--color-background-info);border:.5px solid var(--color-border-info);border-radius:var(--border-radius-md);padding:10px 14px;font-size:13px;color:var(--color-text-info);margin-bottom:12px;line-height:1.5">
+      <i class="ti ti-info-circle" aria-hidden="true" style="font-size:14px;vertical-align:-2px;margin-right:5px"></i><span id="dntext"></span>
+    </div>
+
+    <p style="font-size:11px;color:var(--color-text-secondary);text-align:center;line-height:1.6;margin:0">
+      Estimates vary by niche, audience retention, and ad season. YouTube retains 45% of all ad revenue.
+    </p>
+  </div>
+</div>
+
+<script>
+const DATA=[
+  {n:"Argentina",f:"🇦🇷",c:1.8},{n:"Australia",f:"🇦🇺",c:9.5},{n:"Austria",f:"🇦🇹",c:6.5},
+  {n:"Bangladesh",f:"🇧🇩",c:0.7},{n:"Belgium",f:"🇧🇪",c:6.2},{n:"Brazil",f:"🇧🇷",c:2.8},
+  {n:"Canada",f:"🇨🇦",c:8.2},{n:"Chile",f:"🇨🇱",c:2.5},{n:"China",f:"🇨🇳",c:1.5},
+  {n:"Colombia",f:"🇨🇴",c:1.8},{n:"Czech Republic",f:"🇨🇿",c:3.5},{n:"Denmark",f:"🇩🇰",c:7.8},
+  {n:"Egypt",f:"🇪🇬",c:1.2},{n:"Finland",f:"🇫🇮",c:6.5},{n:"France",f:"🇫🇷",c:5.5},
+  {n:"Germany",f:"🇩🇪",c:9.0},{n:"Greece",f:"🇬🇷",c:3.0},{n:"Hong Kong",f:"🇭🇰",c:5.0},
+  {n:"Hungary",f:"🇭🇺",c:2.5},{n:"India",f:"🇮🇳",c:1.8},{n:"Indonesia",f:"🇮🇩",c:1.5},
+  {n:"Ireland",f:"🇮🇪",c:8.5},{n:"Israel",f:"🇮🇱",c:5.5},{n:"Italy",f:"🇮🇹",c:4.0},
+  {n:"Japan",f:"🇯🇵",c:5.5},{n:"Kenya",f:"🇰🇪",c:1.0},{n:"Kuwait",f:"🇰🇼",c:3.5},
+  {n:"Malaysia",f:"🇲🇾",c:2.2},{n:"Mexico",f:"🇲🇽",c:2.5},{n:"Morocco",f:"🇲🇦",c:1.2},
+  {n:"Nepal",f:"🇳🇵",c:0.6},{n:"Netherlands",f:"🇳🇱",c:8.0},{n:"New Zealand",f:"🇳🇿",c:7.5},
+  {n:"Nigeria",f:"🇳🇬",c:1.0},{n:"Norway",f:"🇳🇴",c:8.0},{n:"Pakistan",f:"🇵🇰",c:1.0},
+  {n:"Peru",f:"🇵🇪",c:1.5},{n:"Philippines",f:"🇵🇭",c:1.5},{n:"Poland",f:"🇵🇱",c:3.0},
+  {n:"Portugal",f:"🇵🇹",c:4.0},{n:"Romania",f:"🇷🇴",c:2.5},{n:"Russia",f:"🇷🇺",c:2.0},
+  {n:"Saudi Arabia",f:"🇸🇦",c:4.5},{n:"Singapore",f:"🇸🇬",c:5.5},{n:"South Africa",f:"🇿🇦",c:2.5},
+  {n:"South Korea",f:"🇰🇷",c:4.5},{n:"Spain",f:"🇪🇸",c:4.0},{n:"Sri Lanka",f:"🇱🇰",c:0.8},
+  {n:"Sweden",f:"🇸🇪",c:7.5},{n:"Switzerland",f:"🇨🇭",c:10.5},{n:"Taiwan",f:"🇹🇼",c:4.0},
+  {n:"Thailand",f:"🇹🇭",c:1.8},{n:"Turkey",f:"🇹🇷",c:1.8},{n:"UAE",f:"🇦🇪",c:5.0},
+  {n:"Ukraine",f:"🇺🇦",c:1.5},{n:"United Kingdom",f:"🇬🇧",c:9.5},{n:"United States",f:"🇺🇸",c:11.5},
+  {n:"Vietnam",f:"🇻🇳",c:1.2}
+];
+
+let sel=null,open=false;
+
+function tier(c){
+  if(c>=6) return{bg:"var(--color-background-success)",col:"var(--color-text-success)"};
+  if(c>=3) return{bg:"var(--color-background-info)",col:"var(--color-text-info)"};
+  return{bg:"var(--color-background-warning)",col:"var(--color-text-warning)"};
+}
+
+function rl(list){
+  const el=document.getElementById("cl");
+  if(!list.length){el.innerHTML='<p style="padding:12px;text-align:center;font-size:13px;color:var(--color-text-secondary);margin:0">No countries found</p>';return;}
+  el.innerHTML=list.map(c=>{
+    const t=tier(c.c), isSel=sel?.n===c.n;
+    return`<div class="citem${isSel?' sel':''}" onclick="sc('${c.n}')" role="option" aria-selected="${isSel}">
+      <span style="font-size:17px;line-height:1;width:22px;text-align:center;flex-shrink:0">${c.f}</span>
+      <span style="flex:1">${c.n}</span>
+      <span style="font-size:11px;font-weight:500;padding:2px 8px;border-radius:100px;background:${t.bg};color:${t.col};white-space:nowrap">$${c.c.toFixed(1)}</span>
+    </div>`;
+  }).join("");
+}
+
+function tp(){
+  open=!open;
+  const dd=document.getElementById("dd"),btn=document.getElementById("pickerBtn"),ch=document.getElementById("chev");
+  dd.style.display=open?"block":"none";
+  btn.style.borderColor=open?"#4382DF":"";
+  ch.style.transform=open?"rotate(180deg)":"";
+  btn.setAttribute("aria-expanded",open.toString());
+  if(open){const s=document.getElementById("csearch");s.value="";rl(DATA);setTimeout(()=>s.focus(),50);}
+}
+
+function fc(q){
+  const f=q.trim()?DATA.filter(c=>c.n.toLowerCase().includes(q.toLowerCase().trim())):DATA;
+  rl(f);
+}
+
+function sc(name){
+  sel=DATA.find(c=>c.n===name);
+  document.getElementById("pflag").textContent=sel.f;
+  document.getElementById("pflag").style.display="inline";
+  document.getElementById("globeIco").style.display="none";
+  document.getElementById("pname").textContent=sel.n;
+  document.getElementById("pname").style.color="var(--color-text-primary)";
+  const t=tier(sel.c),b=document.getElementById("pbadge");
+  b.textContent="$"+sel.c.toFixed(1)+" CPM";
+  b.style.background=t.bg; b.style.color=t.col; b.style.display="inline";
+  if(open) tp();
+}
+
+document.addEventListener("click",e=>{if(open&&!e.target.closest("#pickerWrap"))tp();});
+
+function dinfo(s){
+  const m=s/60;
+  if(m<2) return{mult:.7,note:"Very short videos (under 2 min) have limited ad opportunities and low monetization."};
+  if(m<5) return{mult:1.0,note:"Short videos support pre-roll ads only — revenue potential is limited."};
+  if(m<8) return{mult:1.2,note:"Near the 8-minute threshold. Mid-roll ads aren't unlocked yet."};
+  if(m<15) return{mult:1.5,note:"Your video qualifies for mid-roll ads, boosting estimated revenue by ~50%."};
+  if(m<30) return{mult:1.8,note:"Long-form with multiple mid-roll slots — strong monetization potential."};
+  if(m<60) return{mult:2.1,note:"Extended video with many ad placements — high revenue potential."};
+  return{mult:2.4,note:"Very long video. Maximum mid-roll slots make this highly monetizable."};
+}
+
+function fmt(n){
+  if(n>=1e6) return"$"+(n/1e6).toFixed(2)+"M";
+  if(n>=1e3) return"$"+(n/1e3).toFixed(1)+"K";
+  return"$"+n.toFixed(2);
+}
+
+function animN(el,to,dur){
+  const t0=performance.now();
+  (function tick(now){
+    const p=Math.min((now-t0)/dur,1),e=1-Math.pow(1-p,3),v=to*e;
+    el.textContent=fmt(v);
+    if(p<1) requestAnimationFrame(tick);
+  })(t0);
+}
+
+function calc(){
+  const views=parseInt(document.getElementById("vi").value)||0;
+  const h=parseInt(document.getElementById("dh").value)||0;
+  const m=parseInt(document.getElementById("dm").value)||0;
+  const s=parseInt(document.getElementById("ds").value)||0;
+  const totalSec=h*3600+m*60+s;
+  const err=document.getElementById("err");
+
+  if(!sel){err.textContent="Please select a target country.";err.style.display="block";return;}
+  if(views<1){err.textContent="Please enter a valid number of expected views.";err.style.display="block";return;}
+  if(totalSec===0){err.textContent="Please enter a video duration.";err.style.display="block";return;}
+  err.style.display="none";
+
+  const cpm=sel.c;
+  const rpm=parseFloat((cpm*0.55*0.45).toFixed(3));
+  const{mult,note}=dinfo(totalSec);
+  const typical=(views/1000)*rpm*mult;
+  const low=typical*0.45;
+  const high=typical*1.9;
+
+  document.getElementById("rcpm").textContent="$"+cpm.toFixed(2);
+  document.getElementById("rrpm").textContent="$"+rpm.toFixed(2);
+  document.getElementById("rlow").textContent=fmt(low);
+  document.getElementById("rmid").textContent=fmt(typical);
+  document.getElementById("rhigh").textContent=fmt(high);
+  animN(document.getElementById("rmain"),typical,900);
+
+  document.getElementById("dntext").textContent=note;
+  document.getElementById("dnote").style.display="block";
+
+  const res=document.getElementById("res");
+  res.style.display="block";
+  setTimeout(()=>res.scrollIntoView({behavior:"smooth",block:"nearest"}),80);
+}
+
+rl(DATA);
+</script>
